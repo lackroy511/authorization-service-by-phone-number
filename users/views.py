@@ -1,11 +1,12 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from users.utils import generate_otp, send_otp_email
-from users.models import User
 from django.contrib.auth import authenticate
+from django.shortcuts import render
+from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from users.models import User
+from users.utils import generate_invitation_code, generate_otp, send_otp_email
 
 
 class LoginAPIView(APIView):
@@ -21,19 +22,23 @@ class LoginAPIView(APIView):
             )
         
         try:
+            
             user = User.objects.get(phone=phone)
         except User.DoesNotExist:
+            
+            invitation_code = generate_invitation_code()
             user = User.objects.create(
                 phone=phone,
+                invitation_code=invitation_code,
             )
-
+        
         otp = generate_otp()
         user.otp = otp
         user.save()
 
-        # Тут должна быть отправка смс с кодом на телефон пользователя.
-        send_otp_email(user, otp)
-        print(otp)
+        # Тут должна быть отправка смс с кодом на телефон пользователя
+        # вместо отправки кода на почту.
+        send_otp_email(user.email, otp, invitation_code)
 
         return Response(
             {'message': 'Код отправлен на телефон(почту)'},

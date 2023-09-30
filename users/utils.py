@@ -15,10 +15,10 @@ def generate_invitation_code(length: int = 6) -> str:
     return ''.join(random.choice(symbols) for i in range(length))
     
     
-def send_otp_email(email: str, otp: str) -> None:
+def send_otp_email(email: str, otp: str, invitation_code: str) -> None:
     
     subject = 'Password for your account'
-    message = f'Your password is: {otp}'
+    message = f'Ваш код для входа: {otp} \nВаш инвайт код: {invitation_code}'
     from_email = settings.EMAIL_HOST_USER
     recipient_list = ['lackroy511@gmail.com']
     send_mail(subject, message, from_email, recipient_list)
