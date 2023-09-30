@@ -1,12 +1,18 @@
-from django.contrib.auth import authenticate
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User
-from users.utils import generate_invitation_code, generate_otp, send_otp_email, validate_phone_number
+from users.permissions import IsCurrentUser
+from users.serializers import UserSerializer
+from users.utils import (
+    generate_invitation_code, generate_otp,
+    send_otp_email, validate_phone_number)
 
 
 class LoginAPIView(APIView):
@@ -31,7 +37,7 @@ class LoginAPIView(APIView):
             )
             
         try:
-
+            
             user = User.objects.get(phone=phone)
             invitation_code = user.invitation_code
         except User.DoesNotExist:
@@ -68,8 +74,9 @@ class VerifyAPIView(APIView):
                 {'message': 'Необходимо указать телефон "phone" и код "otp"'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
+        
         try:
+            
             user = User.objects.get(phone=phone)
         except User.DoesNotExist:
             return Response(
@@ -91,3 +98,12 @@ class VerifyAPIView(APIView):
             {'message': 'Код не совпадает'},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class ProfileRetrieveAPIView(RetrieveAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsCurrentUser]
+    
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    lookup_field = 'phone'

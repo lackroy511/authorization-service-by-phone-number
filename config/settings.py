@@ -142,3 +142,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True  
 EMAIL_HOST_USER = 'djang5111@gmail.com'  
 EMAIL_HOST_PASSWORD = 'owexmhfxwfchdvuq'  
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}

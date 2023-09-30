@@ -1,9 +1,9 @@
-import string
 import random
 import re
+import string
 
-from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail
 
 
 def generate_otp(length: int = 4) -> str:
