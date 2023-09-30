@@ -6,32 +6,42 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User
-from users.utils import generate_invitation_code, generate_otp, send_otp_email
+from users.utils import generate_invitation_code, generate_otp, send_otp_email, validate_phone_number
 
 
 class LoginAPIView(APIView):
-
+    
     def post(self, request):
 
-        phone = request.data.get('phone')
-        
+        phone = request.data.get('phone').replace(' ', '').replace('+', '')
+
         if not phone:
             return Response(
                 {'message': 'Необходимо указать телефон "phone"'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
+        if not validate_phone_number(phone):
+            return Response(
+                {
+                    'message': 'Неверный формат телефона, ' +
+                               'должен быть в формате 7 800 800 80 80',
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
         try:
-            
+
             user = User.objects.get(phone=phone)
+            invitation_code = user.invitation_code
         except User.DoesNotExist:
-            
+
             invitation_code = generate_invitation_code()
             user = User.objects.create(
                 phone=phone,
                 invitation_code=invitation_code,
             )
-        
+
         otp = generate_otp()
         user.otp = otp
         user.save()
@@ -47,18 +57,18 @@ class LoginAPIView(APIView):
 
 
 class VerifyAPIView(APIView):
-    
+
     def post(self, request):
-        
-        phone = request.data.get('phone')
+
+        phone = request.data.get('phone').replace(' ', '').replace('+', '')
         otp = request.data.get('otp')
-        
+
         if not phone or not otp:
             return Response(
                 {'message': 'Необходимо указать телефон "phone" и код "otp"'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         try:
             user = User.objects.get(phone=phone)
         except User.DoesNotExist:
@@ -70,13 +80,13 @@ class VerifyAPIView(APIView):
         if user.otp == otp:
             user.otp = None
             user.save()
-            
+
             token, _ = Token.objects.get_or_create(user=user)
             return Response(
                 {'token': token.key},
                 status=status.HTTP_200_OK,
             )
-        
+
         return Response(
             {'message': 'Код не совпадает'},
             status=status.HTTP_400_BAD_REQUEST,
