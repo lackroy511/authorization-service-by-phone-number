@@ -10,7 +10,8 @@ class UserAdmin(admin.ModelAdmin):
     fields = (
         'email', 
         'phone',
-        'invitation_code',
+        'personal_invitation_code',
+        'someone_invite_code',
         'otp', 
         'password', 
         'is_active', 
