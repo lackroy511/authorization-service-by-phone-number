@@ -121,3 +121,14 @@ class ProfileUpdateAPIView(UpdateAPIView):
     serializer_class = UpdateUserSerializer
     queryset = User.objects.all()
     lookup_field = 'phone'
+
+    def put(self, request, *args, **kwargs):
+        
+        user = self.request.user
+        new_code = self.request.data.get('someone_invite_code')
+        old_code = user.someone_invite_code
+        
+        if new_code != old_code and new_code is not None:
+            raise ValidationError('Cannot change someone invite code')
+        
+        return super().put(request, *args, **kwargs)
