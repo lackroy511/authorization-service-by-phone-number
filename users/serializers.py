@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from users.models import User
+from users.validators import InviteCodeIsExist
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
         
         return User.objects.filter(
             someone_invite_code=obj.personal_invitation_code,
-        ) 
+        ).values_list('phone')
         
 
 class UpdateUserSerializer(serializers.ModelSerializer):
@@ -37,4 +38,6 @@ class UpdateUserSerializer(serializers.ModelSerializer):
             'last_name',
             'someone_invite_code',
         )        
-
+        validators = (
+            InviteCodeIsExist(),
+        )

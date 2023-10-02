@@ -5,7 +5,6 @@ from users.views import (LoginAPIView, ProfileRetrieveAPIView,
                          ProfileUpdateAPIView, RefreshTokenAPIView,
                          VerifyAPIView)
 
-
 app_name = UsersConfig.name
 
 urlpatterns = [
