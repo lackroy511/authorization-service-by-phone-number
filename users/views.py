@@ -1,8 +1,4 @@
-from datetime import datetime
-
 from rest_framework import status
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.models import Token
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -10,13 +6,13 @@ from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import token_refresh
 
 from users.models import User
 from users.permissions import IsCurrentUser
 from users.serializers import UpdateUserSerializer, UserSerializer
+from users.tasks import send_otp_to_email
 from users.utils import (generate_invitation_code, generate_otp,
-                         send_otp_email, validate_phone_number)
+                         validate_phone_number)
 
 
 class LoginAPIView(APIView):
@@ -41,12 +37,10 @@ class LoginAPIView(APIView):
             )
 
         try:
-
             user = User.objects.get(phone=phone)
             personal_invitation_code = user.personal_invitation_code
 
         except User.DoesNotExist:
-
             personal_invitation_code = generate_invitation_code()
             user = User.objects.create(
                 phone=phone,
@@ -59,7 +53,7 @@ class LoginAPIView(APIView):
 
         # Тут должна быть отправка смс с кодом на телефон пользователя
         # вместо отправки кода на почту.
-        send_otp_email(user.email, otp, personal_invitation_code)
+        send_otp_to_email.delay(user.email, otp, personal_invitation_code)
 
         return Response(
             {'message': 'Код отправлен на телефон(почту)'},
@@ -81,20 +75,17 @@ class VerifyAPIView(APIView):
             )
 
         try:
-
             user = User.objects.get(phone=phone)
-
+            
         except User.DoesNotExist:
-
             return Response(
                 {'message': 'Такого пользователя не существует'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+                status=status.HTTP_400_BAD_REQUEST)
 
         if user.check_password(password):
-
             refresh = RefreshToken.for_user(user)
-
+            # Обновить пароль пользователя, 
+            # что бы ограничить аутентификацию только через полученный токен.
             user.set_password(generate_otp())
             user.save()
 
@@ -103,13 +94,11 @@ class VerifyAPIView(APIView):
                     'access_token': str(refresh.access_token),
                     'refresh_token': str(refresh),
                 },
-                status=status.HTTP_200_OK,
-            )
+                status=status.HTTP_200_OK)
 
         return Response(
             {'message': 'Код не совпадает'},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+            status=status.HTTP_400_BAD_REQUEST)
 
 
 class RefreshTokenAPIView(APIView):
@@ -127,6 +116,7 @@ class RefreshTokenAPIView(APIView):
         try:
             refresh = RefreshToken(refresh_token)
             access_token = str(refresh.access_token)
+            
         except TokenError:
             return Response({'message': 'Не валидный токен'})
 
@@ -160,7 +150,6 @@ class ProfileUpdateAPIView(UpdateAPIView):
                     {
                         'message': 'Нельзя изменить код' + 
                                    'пригласившего пользователя',
-                    },
-                )
+                    })
 
         return super().put(request, *args, **kwargs)
