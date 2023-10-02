@@ -8,20 +8,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import token_refresh
 
 from users.models import User
 from users.permissions import IsCurrentUser
 from users.serializers import UpdateUserSerializer, UserSerializer
 from users.utils import (generate_invitation_code, generate_otp,
                          send_otp_email, validate_phone_number)
-
+from rest_framework_simplejwt.exceptions import TokenError
 
 class LoginAPIView(APIView):
     
     def post(self, request):
 
         phone = request.data.get('phone').replace(' ', '').replace('+', '')
-
+        
         if not phone:
             return Response(
                 {'message': 'Необходимо указать телефон "phone"'},
@@ -51,7 +53,7 @@ class LoginAPIView(APIView):
             )
 
         otp = generate_otp()
-        user.otp = otp
+        user.set_password(otp)
         user.save()
 
         # Тут должна быть отправка смс с кодом на телефон пользователя
@@ -69,11 +71,11 @@ class VerifyAPIView(APIView):
     def post(self, request):
 
         phone = request.data.get('phone').replace(' ', '').replace('+', '')
-        otp = request.data.get('otp')
+        password = request.data.get('password')
 
-        if not phone or not otp:
+        if not phone or not password:
             return Response(
-                {'message': 'Необходимо указать телефон "phone" и код "otp"'},
+                {'message': 'Укажите: "phone" и "password"'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
@@ -88,14 +90,18 @@ class VerifyAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if user.otp == otp:
-            user.otp = None
+        if user.check_password(password):
+            
+            refresh = RefreshToken.for_user(user)
+            
+            user.set_password(generate_otp())
             user.save()
-
-            token, _ = Token.objects.get_or_create(user=user)
-
+            
             return Response(
-                {'token': token.key},
+                {
+                    'access_token': str(refresh.access_token),
+                    'refresh_token': str(refresh),
+                },
                 status=status.HTTP_200_OK,
             )
 
@@ -105,8 +111,28 @@ class VerifyAPIView(APIView):
         )
 
 
+class RefreshTokenAPIView(APIView):
+    
+    def post(self, request):
+
+        refresh_token = request.data.get('refresh_token')
+        
+        if not refresh_token:
+            return Response(
+                {'message': 'Укажите: "refresh_token"'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+        except TokenError:
+            return Response({'message': 'Не валидный токен'})
+        
+        return Response({'access_token': access_token})
+            
+              
 class ProfileRetrieveAPIView(RetrieveAPIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsCurrentUser]
     
     serializer_class = UserSerializer
@@ -115,7 +141,6 @@ class ProfileRetrieveAPIView(RetrieveAPIView):
 
 
 class ProfileUpdateAPIView(UpdateAPIView):
-    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsCurrentUser]
     
     serializer_class = UpdateUserSerializer
@@ -128,7 +153,9 @@ class ProfileUpdateAPIView(UpdateAPIView):
         new_code = self.request.data.get('someone_invite_code')
         old_code = user.someone_invite_code
         
-        if new_code != old_code and new_code is not None:
-            raise ValidationError('Cannot change someone invite code')
+        if new_code != old_code and old_code is not None:
+            raise ValidationError(
+                {'message': 'Cannot change someone invite code'},
+            )
         
         return super().put(request, *args, **kwargs)
