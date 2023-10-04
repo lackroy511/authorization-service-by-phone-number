@@ -2,7 +2,6 @@ from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -11,12 +10,12 @@ from users.models import User
 from users.permissions import IsCurrentUser
 from users.serializers import UpdateUserSerializer, UserSerializer
 from users.tasks import send_otp_to_email
-from users.utils.doc import login_api_doc, refresh_api_doc, verify_api_doc
+from users.utils.doc import (login_api_doc, profile_update_api_doc,
+                             refresh_api_doc, verify_api_doc)
 from users.utils.login_api_view import user_get_or_create
-from users.utils.utils import (generate_otp,
-                               validate_phone_number)
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from users.utils.profile_update_api_view import \
+    check_invite_code_cant_be_changed
+from users.utils.utils import generate_otp, validate_phone_number
 
 
 class LoginAPIView(APIView):
@@ -145,18 +144,16 @@ class ProfileUpdateAPIView(UpdateAPIView):
     queryset = User.objects.all()
     lookup_field = 'phone'
 
+    @profile_update_api_doc()
     def put(self, request, *args, **kwargs):
 
-        user = self.request.user
-        new_code = self.request.data.get('someone_invite_code')
-        old_code = user.someone_invite_code
-
-        if new_code:
-            if new_code != old_code and old_code is not None:
-                raise ValidationError(
-                    {
-                        'message': 'Нельзя изменить код' + 
-                                   'пригласившего пользователя',
-                    })
+        check_invite_code_cant_be_changed(self, request)
 
         return super().put(request, *args, **kwargs)
+    
+    @profile_update_api_doc()
+    def patch(self, request, *args, **kwargs):
+        
+        check_invite_code_cant_be_changed(self, request)
+        
+        return super().patch(request, *args, **kwargs)

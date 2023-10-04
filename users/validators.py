@@ -1,7 +1,7 @@
 from collections import OrderedDict
-from rest_framework.request import Request
 from typing import Any
 
+from rest_framework.request import Request
 from rest_framework.serializers import ValidationError
 
 from users.models import User

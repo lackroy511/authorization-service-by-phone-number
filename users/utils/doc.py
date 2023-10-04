@@ -1,5 +1,5 @@
-from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 def login_api_doc():
@@ -9,7 +9,7 @@ def login_api_doc():
             properties={
                 'phone': openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    description='Номер телефона пользователя' + 
+                    description='Номер телефона пользователя' +
                                 '(формат: 7 800 800 80 80)',
                     example='7 800 800 80 80',
                 ),
@@ -30,7 +30,7 @@ def verify_api_doc():
             properties={
                 'phone': openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    description='Номер телефона пользователя ' + 
+                    description='Номер телефона пользователя ' +
                                 '(формат: 7 800 800 80 80)',
                     example='7 800 800 80 80',
                 ),
@@ -77,7 +77,20 @@ def refresh_api_doc():
                         ),
                     },
                 ),
-            ),  
+            ),
             400: 'Укажите: "refresh_token',
         },
+    )
+
+
+def profile_update_api_doc():
+    return swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'someone_invite_code': 
+                    openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        responses={400: 'Нельзя изменить код пригласившего пользователя'},
     )
