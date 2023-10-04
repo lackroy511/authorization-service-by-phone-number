@@ -18,7 +18,8 @@ class InviteCodeIsExist:
                 personal_invitation_code=invite_code).exists()
         
             if not flag:
-                raise ValidationError('Код приглашения не существует')
+                raise ValidationError(
+                    {'message': 'Код приглашения не существует'})
 
 
 class CantChangeInviteCode:
