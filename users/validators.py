@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from rest_framework.request import Request
 from typing import Any
 
 from rest_framework.serializers import ValidationError
@@ -18,3 +19,10 @@ class InviteCodeIsExist:
         
             if not flag:
                 raise ValidationError('Код приглашения не существует')
+
+
+class CantChangeInviteCode:
+    
+    def __call__(self, fields: OrderedDict, request: Request) -> Any:
+        
+        print(request)

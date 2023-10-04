@@ -11,9 +11,12 @@ from users.models import User
 from users.permissions import IsCurrentUser
 from users.serializers import UpdateUserSerializer, UserSerializer
 from users.tasks import send_otp_to_email
+from users.utils.doc import login_api_doc, refresh_api_doc, verify_api_doc
 from users.utils.login_api_view import user_get_or_create
 from users.utils.utils import (generate_otp,
                                validate_phone_number)
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class LoginAPIView(APIView):
@@ -22,6 +25,8 @@ class LoginAPIView(APIView):
     или генерирует новый пароль для входа, если пользователь уже существует.
      Затем отправляет на почту код для аутентификации.
     """
+    
+    @login_api_doc()
     def post(self, request):
 
         phone = request.data.get('phone').replace(' ', '').replace('+', '')
@@ -63,6 +68,8 @@ class VerifyAPIView(APIView):
     пользователя на неизвестный для него.
      Если пароль верный выдает токен обновления и токен доступа.
     """
+    
+    @verify_api_doc()
     def post(self, request):
 
         phone = request.data.get('phone').replace(' ', '').replace('+', '')
@@ -79,7 +86,7 @@ class VerifyAPIView(APIView):
         except User.DoesNotExist:
             return Response(
                 {'message': 'Такого пользователя не существует'},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=status.HTTP_404_NOT_FOUND)
 
         if user.check_password(password):
             refresh = RefreshToken.for_user(user)
@@ -97,10 +104,12 @@ class VerifyAPIView(APIView):
 
         return Response(
             {'message': 'Код не совпадает'},
-            status=status.HTTP_400_BAD_REQUEST)
+            status=status.HTTP_401_UNAUTHORIZED)
 
 
 class RefreshTokenAPIView(APIView):
+    
+    @refresh_api_doc()
     def post(self, request):
 
         refresh_token = request.data.get('refresh_token')
@@ -115,7 +124,8 @@ class RefreshTokenAPIView(APIView):
             refresh = RefreshToken(refresh_token)
             
         except TokenError:
-            return Response({'message': 'Не валидный токен'})
+            return Response({'message': 'Не валидный токен'},
+                            status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
         return Response({'access_token': str(refresh.access_token)})
 
