@@ -25,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
         
         return User.objects.filter(
             someone_invite_code=obj.personal_invitation_code,
-        ).values_list('phone')
+        ).values('phone')
         
 
 class UpdateUserSerializer(serializers.ModelSerializer):

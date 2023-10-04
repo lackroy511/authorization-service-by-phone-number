@@ -11,12 +11,17 @@ from users.models import User
 from users.permissions import IsCurrentUser
 from users.serializers import UpdateUserSerializer, UserSerializer
 from users.tasks import send_otp_to_email
-from users.utils import (generate_invitation_code, generate_otp,
-                         validate_phone_number)
+from users.utils.login_api_view import user_get_or_create
+from users.utils.utils import (generate_otp,
+                               validate_phone_number)
 
 
 class LoginAPIView(APIView):
-
+    """
+     Эндпоинт принимает пост запрос с номером телефона и создает пользователя 
+    или генерирует новый пароль для входа, если пользователь уже существует.
+     Затем отправляет на почту код для аутентификации.
+    """
     def post(self, request):
 
         phone = request.data.get('phone').replace(' ', '').replace('+', '')
@@ -36,16 +41,7 @@ class LoginAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        try:
-            user = User.objects.get(phone=phone)
-            personal_invitation_code = user.personal_invitation_code
-
-        except User.DoesNotExist:
-            personal_invitation_code = generate_invitation_code()
-            user = User.objects.create(
-                phone=phone,
-                personal_invitation_code=personal_invitation_code,
-            )
+        user = user_get_or_create(phone)
 
         otp = generate_otp()
         user.set_password(otp)
@@ -53,7 +49,7 @@ class LoginAPIView(APIView):
 
         # Тут должна быть отправка смс с кодом на телефон пользователя
         # вместо отправки кода на почту.
-        send_otp_to_email.delay(user.email, otp, personal_invitation_code)
+        send_otp_to_email.delay(user.email, otp, user.personal_invitation_code)
 
         return Response(
             {'message': 'Код отправлен на телефон(почту)'},
@@ -62,7 +58,11 @@ class LoginAPIView(APIView):
 
 
 class VerifyAPIView(APIView):
-
+    """
+     Эндпоинт принимает код отправленный на почту и обновляет пароль 
+    пользователя на неизвестный для него.
+     Если пароль верный выдает токен обновления и токен доступа.
+    """
     def post(self, request):
 
         phone = request.data.get('phone').replace(' ', '').replace('+', '')
@@ -76,7 +76,6 @@ class VerifyAPIView(APIView):
 
         try:
             user = User.objects.get(phone=phone)
-            
         except User.DoesNotExist:
             return Response(
                 {'message': 'Такого пользователя не существует'},
@@ -102,7 +101,6 @@ class VerifyAPIView(APIView):
 
 
 class RefreshTokenAPIView(APIView):
-
     def post(self, request):
 
         refresh_token = request.data.get('refresh_token')
@@ -115,12 +113,11 @@ class RefreshTokenAPIView(APIView):
 
         try:
             refresh = RefreshToken(refresh_token)
-            access_token = str(refresh.access_token)
             
         except TokenError:
             return Response({'message': 'Не валидный токен'})
 
-        return Response({'access_token': access_token})
+        return Response({'access_token': str(refresh.access_token)})
 
 
 class ProfileRetrieveAPIView(RetrieveAPIView):
