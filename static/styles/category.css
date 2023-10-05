@@ -1,0 +1,24 @@
+.btn.btn-outline-primary {
+    padding: 0rem;
+    border-color: rgb(146, 147, 156);
+    
+}
+
+.btn.btn-outline-primary:hover {
+    background-color: #0D6EFD; 
+}
+
+.user-action {
+    text-decoration: none;
+    display: block;
+    margin: 0;
+    padding: 0.2rem;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+    color: #a1a6aa;
+
+}
+
+.user-action:hover {
+    color: #eef3fa;
+}
