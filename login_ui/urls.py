@@ -1,8 +1,8 @@
+from django.contrib.auth.views import LogoutView
 from django.urls import path
 
 from login_ui.apps import LoginUiConfig
-from login_ui.views import IndexView, VerifyView, ProfileView
-from django.contrib.auth.views import LogoutView
+from login_ui.views import IndexView, ProfileView, VerifyView
 
 app_name = LoginUiConfig.name
 

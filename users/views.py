@@ -15,7 +15,12 @@ from users.utils.doc import (login_api_doc, profile_update_api_doc,
 from users.utils.login_api_view import user_get_or_create
 from users.utils.profile_update_api_view import \
     check_invite_code_cant_be_changed
-from users.utils.utils import generate_otp, validate_phone_number
+from users.utils.utils import (error_message_response_400,
+                               error_message_response_401,
+                               error_message_response_404,
+                               error_message_response_422, generate_otp,
+                               success_response, success_response_with_token,
+                               validate_phone_number)
 
 
 class LoginAPIView(APIView):
@@ -28,25 +33,20 @@ class LoginAPIView(APIView):
     @login_api_doc()
     def post(self, request):
 
-        phone = request.data.get('phone').replace(' ', '').replace('+', '')
-
+        phone = request.data.get('phone')
+        if phone:
+            phone = phone.replace(' ', '').replace('+', '')
+            
         if not phone:
-            return Response(
-                {'message': 'Необходимо указать телефон "phone"'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            message = 'Необходимо указать телефон "phone"'
+            return error_message_response_400(message)
 
         if not validate_phone_number(phone):
-            return Response(
-                {
-                    'message': 'Неверный формат телефона, ' +
-                               'должен быть в формате 7 800 800 80 80',
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            message = 'Неверный формат телефона, ' + \
+                      'должен быть в формате 7 800 800 80 80'
+            return error_message_response_400(message)
 
         user = user_get_or_create(phone)
-
         otp = generate_otp()
         user.set_password(otp)
         user.save()
@@ -55,10 +55,8 @@ class LoginAPIView(APIView):
         # вместо отправки кода на почту.
         send_otp_to_email.delay(user.email, otp, user.personal_invitation_code)
 
-        return Response(
-            {'message': 'Код отправлен на телефон(почту)'},
-            status=status.HTTP_200_OK,
-        )
+        message = 'Код отправлен на телефон(почту)'
+        return success_response(message)
 
 
 class VerifyAPIView(APIView):
@@ -71,21 +69,21 @@ class VerifyAPIView(APIView):
     @verify_api_doc()
     def post(self, request):
 
-        phone = request.data.get('phone').replace(' ', '').replace('+', '')
+        phone = request.data.get('phone')
+        if phone:
+            phone = phone.replace(' ', '').replace('+', '')
+            
         password = request.data.get('password')
 
         if not phone or not password:
-            return Response(
-                {'message': 'Укажите: "phone" и "password"'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            message = 'Укажите: "phone" и "password"'
+            return error_message_response_400(message)
 
         try:
             user = User.objects.get(phone=phone)
         except User.DoesNotExist:
-            return Response(
-                {'message': 'Такого пользователя не существует'},
-                status=status.HTTP_404_NOT_FOUND)
+            message = 'Такого пользователя не существует'
+            return error_message_response_404(message)
 
         if user.check_password(password):
             refresh = RefreshToken.for_user(user)
@@ -94,16 +92,10 @@ class VerifyAPIView(APIView):
             user.set_password(generate_otp())
             user.save()
 
-            return Response(
-                {
-                    'access_token': str(refresh.access_token),
-                    'refresh_token': str(refresh),
-                },
-                status=status.HTTP_200_OK)
-
-        return Response(
-            {'message': 'Код не совпадает'},
-            status=status.HTTP_401_UNAUTHORIZED)
+            return success_response_with_token(refresh)
+        
+        message = 'Неверный пароль'
+        return error_message_response_401(message)
 
 
 class RefreshTokenAPIView(APIView):
@@ -114,17 +106,15 @@ class RefreshTokenAPIView(APIView):
         refresh_token = request.data.get('refresh_token')
 
         if not refresh_token:
-            return Response(
-                {'message': 'Укажите: "refresh_token"'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            message = 'Укажите: "refresh_token'
+            return error_message_response_400(message)
 
         try:
             refresh = RefreshToken(refresh_token)
             
         except TokenError:
-            return Response({'message': 'Не валидный токен'},
-                            status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            message = 'Неверный токен'
+            return error_message_response_422(message)
 
         return Response({'access_token': str(refresh.access_token)})
 

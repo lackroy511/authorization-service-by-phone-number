@@ -1,6 +1,6 @@
 from django.test import TestCase
-from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.test import APITestCase
 
 from users.models import User
 
@@ -81,7 +81,7 @@ class UserTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         response = response.json()
 
-        self.assertEqual(response.get('message'), 'Код не совпадает')
+        self.assertEqual(response.get('message'), 'Неверный пароль')
 
     def test_post_wrong_phone_verify_api_view(self):
 
@@ -128,7 +128,7 @@ class UserTestCase(APITestCase):
                          status.HTTP_422_UNPROCESSABLE_ENTITY)
         response = response.json()
 
-        self.assertEqual(response['message'], 'Не валидный токен')
+        self.assertEqual(response['message'], 'Неверный токен')
 
     def test_get_profile_retrieve_api_view(self):
 

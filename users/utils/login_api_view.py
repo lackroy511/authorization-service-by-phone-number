@@ -1,5 +1,4 @@
 
-
 from users.models import User
 from users.utils.utils import generate_invitation_code
 
