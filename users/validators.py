@@ -20,10 +20,3 @@ class InviteCodeIsExist:
             if not flag:
                 raise ValidationError(
                     {'message': 'Код приглашения не существует'})
-
-
-class CantChangeInviteCode:
-    
-    def __call__(self, fields: OrderedDict, request: Request) -> Any:
-        
-        print(request)

@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6378:6379"
+    
+  postgres:
+    image: postgres:latest
+    env_file:
+      - .env
+    ports:
+      - "5431:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data/tb4
+
+  app:
+    build: .
+    tty: true
+    command: bash -c "python manage.py migrate && python manage.py collectstatic --no-input && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - /staticfiles/
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  celery:
+    build: .
+    tty: true
+    command: celery -A config worker --loglevel=info
+    depends_on:
+      - postgres
+      - app
+      - redis
+
+volumes:
+  pg_data:

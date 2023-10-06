@@ -1,0 +1,15 @@
+.container-fluid.section {
+    /* background-color: rgba(170, 167, 167, 0.78); */
+    background-image: url(../../static/images/jpg.jpg);
+    background-size: no-repeat;
+    background-position: center;
+    background-size: cover;
+    min-height: 100vh;
+    max-height: 400vh;
+
+}
+
+footer {
+    background-color: #212529;
+    height: 2em;
+}

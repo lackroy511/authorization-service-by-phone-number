@@ -1,0 +1,9 @@
+.card.m-5 {
+    width: 29.5rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.entry-preview {
+    width: 500px;
+}

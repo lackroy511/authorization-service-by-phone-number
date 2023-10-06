@@ -1,0 +1,23 @@
+.row.title-login {
+    margin-bottom: 2rem;
+}
+
+.card.login {
+    width: 28rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.row.title-register {
+    margin-bottom: 1rem;
+}
+
+.row.title-profile {
+    margin-bottom: 1rem;
+}
+
+.card.profile {
+    width: 35rem;
+    margin-left: auto;
+    margin-right: auto;
+}

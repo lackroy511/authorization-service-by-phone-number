@@ -1,0 +1,54 @@
+/*Настройки логотипа*/
+.navbar-brand {
+    color: #02b502;
+    font-weight: bold;
+}
+.navbar-brand:hover {
+    color: #047c04;
+}
+
+/*Настройки неактивной кнопки*/
+.nav-link {
+    color: #a9b9a9;
+}
+.nav-link:hover {
+    color: #047c04;
+}
+
+/*Настройки активной кнопки*/
+.navbar-nav .nav-link.active {
+    color: #02b502;
+    font-weight: bold;
+    font-size: 0.97em;
+}
+.navbar-nav .nav-link.active:hover {
+    color: #047c04;
+    font-weight: bold;
+    font-size: 0.97em;
+}
+
+.navbar-toggler {
+    background-color: rgba(2, 181, 2, 0.71);
+}
+
+.navbar-nav.login {
+    margin-left: auto;
+}
+
+.navbar-nav.login .nav-link {
+    color: #a9b9a9;
+}
+.navbar-nav.login .nav-link:hover {
+    color: rgba(2, 181, 2, 0.71);
+}
+
+.navbar-nav.login .nav-link.active {
+    color: #02b502;
+    font-weight: bold;
+    font-size: 0.97em;
+}
+.navbar-nav.login .nav-link.active:hover {
+    color: #047c04;
+    font-weight: bold;
+    font-size: 0.97em;
+}
