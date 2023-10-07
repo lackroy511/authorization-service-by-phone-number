@@ -144,6 +144,6 @@ class ProfileUpdateAPIView(UpdateAPIView):
     @profile_update_api_doc()
     def patch(self, request, *args, **kwargs):
         
-        check_invite_code_cant_be_changed(self, request)
+        check_invite_code_cant_be_changed(self)
         
         return super().patch(request, *args, **kwargs)

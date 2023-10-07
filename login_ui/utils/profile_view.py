@@ -49,7 +49,6 @@ def post_new_user_data(self, request: HttpRequest) -> None:
     headers = {'Authorization': f'Bearer {access_token}'}
     
     data = get_data_from_post_query(request)
-    
     requests.patch(
             f'{self.url}/update/{self.request.user.phone}/', 
             data=data, headers=headers)
@@ -68,4 +67,5 @@ def get_data_from_post_query(request: HttpRequest) -> dict:
         'first_name': request.POST.get('first_name'),
         'last_name': request.POST.get('last_name'),
         'someone_invite_code': request.POST.get('someone_invite_code'),
+        
     }
