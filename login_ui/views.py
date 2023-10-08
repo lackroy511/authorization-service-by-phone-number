@@ -30,7 +30,9 @@ class IndexView(TemplateView):
         response = requests.post(self.url, data={'phone': phone})
         response = response.json()
         request.session['phone'] = phone
-        # request.session['response'] = response
+        
+        # Для тестового вывода пароля
+        request.session['otp'] = response.get('message').split('$')[1]
         
         return redirect('login_ui:verify')
 
@@ -53,6 +55,9 @@ class VerifyView(TemplateView):
         context = super().get_context_data(**kwargs)
         phone = self.request.session.get('phone')
         context['phone'] = phone
+        
+        # Для тестового вывода пароля
+        context['otp'] = self.request.session.get('otp')
         
         return context
         

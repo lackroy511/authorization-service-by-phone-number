@@ -55,7 +55,9 @@ class LoginAPIView(APIView):
         # вместо отправки кода на почту.
         send_otp_to_email.delay(user.email, otp, user.personal_invitation_code)
 
-        message = 'Код отправлен на телефон(почту)'
+        # Для тестового вывода пароля
+        message = f'Код отправлен на телефон(почту) ${otp}'
+        
         return success_response(message)
 
 
