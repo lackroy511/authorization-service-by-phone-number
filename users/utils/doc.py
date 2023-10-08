@@ -17,8 +17,29 @@ def login_api_doc():
             required=['phone'],
         ),
         responses={
-            200: 'Код отправлен на телефон(почту)',
-            400: 'Некорректные данные запроса',
+            200: openapi.Response(
+                'Success', openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example='Код отправлен на телефон(почту)',
+                        ),
+                    },
+                ),
+            ),
+            400: openapi.Response(
+                'Success', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='Неверный формат телефона, должен быть' + 
+                                    'в формате 7 800 800 80 80',
+                        ),
+                    },
+                ),
+            ),
         },
     )
 
@@ -43,10 +64,69 @@ def verify_api_doc():
             required=['phone', 'otp'],
         ),
         responses={
-            200: 'access_token и refresh_token',
-            400: 'Укажите: "phone" и "password"',
-            404: 'Такого пользователя не существует',
-            401: 'Код не совпадает',
+            200: openapi.Response(
+                description='Токен доступа',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'access_token': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description='Токен доступа',
+                            example='eyJhbGJfj3jb...gqFDHLsvK0',
+                        ),
+                        'refresh_token': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description='Токен обновления',
+                            example='eyJhbGJfj3jb...gqFDHLsvK0',
+                        ),
+                    },
+                ),
+            ),
+            400: openapi.Response(
+                'Success', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='Укажите: "phone" и "password"',
+                        ),
+                    },
+                ),
+            ),
+            401: openapi.Response(
+                'Success', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='Неверный пароль',
+                        ),
+                    },
+                ),
+            ),
+            404: openapi.Response(
+                'Success', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='Такого пользователя не существует',
+                        ),
+                    },
+                ),
+            ),
+            403: openapi.Response(
+                'Forbidden', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'detail': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='You do not have permission to perform' + 
+                                    'this action.',
+                        ),
+                    },
+                ),
+            ),
         },
     )
 
@@ -72,13 +152,25 @@ def refresh_api_doc():
                     properties={
                         'access_token': openapi.Schema(
                             type=openapi.TYPE_STRING,
-                            description='Токен доступа',
+                            description='Ответ сервера',
                             example='eyJhbGJfj3jb...gqFDHLsvK0',
                         ),
                     },
                 ),
             ),
-            400: 'Укажите: "refresh_token',
+            422: openapi.Response(
+                description='Токен доступа',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description='Ответ сервера',
+                            example='Неверный токен',
+                        ),
+                    },
+                ),
+            ),
         },
     )
 
@@ -88,9 +180,63 @@ def profile_update_api_doc():
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'someone_invite_code': 
-                    openapi.Schema(type=openapi.TYPE_STRING),
+                'email': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Электронная почта',
+                    example='qwe@qwe.com',
+                ),
+                'first_name': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Имя',
+                    example='Юра',
+                ),
+                'last_name': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Фамилия',
+                    example='Дудь',
+                ),
+                'someone_invite_code': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Инвайт код пользователя, который пригласил',
+                    example='enxt0g',
+                ),
             },
         ),
-        responses={400: 'Нельзя изменить код пригласившего пользователя'},
+        responses={
+            400: openapi.Response(
+                'Bas request', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='Нельзя изменить код пригласившего' + 
+                                    'пользователя',
+                        ),
+                    },
+                ),
+            ),
+            404: openapi.Response(
+                'Not found', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'detail': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='Not found.',
+                        ),
+                    },
+                ),
+            ),
+            403: openapi.Response(
+                'Forbidden', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'detail': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='You do not have permission to perform' + 
+                                    'this action.',
+                        ),
+                    },
+                ),
+            ),
+        },
     )
