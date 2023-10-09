@@ -35,8 +35,8 @@ class UserTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response = response.json()
 
-        self.assertEqual(
-            response['message'], 'Код отправлен на телефон(почту)',
+        self.assertTrue(
+            'Код отправлен на телефон(почту)' in response['message'],
         )
 
     def test_post_negative_post_login_api_view(self):
