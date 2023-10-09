@@ -43,7 +43,6 @@ class VerifyView(TemplateView):
     отправленного на почту(телефон).
     """
     template_name = 'login_ui/verify.html'
-    
     url = 'http://127.0.0.1:8000/users/verify/'
     
     def get_context_data(self, **kwargs):
@@ -51,7 +50,6 @@ class VerifyView(TemplateView):
         Добавить в контекст телефон из сессии что бы он отображался
         в строке ввода телефона по дефолту.
         """
-        
         context = super().get_context_data(**kwargs)
         phone = self.request.session.get('phone')
         context['phone'] = phone
@@ -94,7 +92,6 @@ class ProfileView(TemplateView):
     """Просмотр и обновление профиля пользователя."""
     
     template_name = 'login_ui/profile.html'
-    
     url = 'http://127.0.0.1:8000/users'
     
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:

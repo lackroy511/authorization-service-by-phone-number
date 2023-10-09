@@ -1,5 +1,5 @@
 import os
-from rest_framework import status
+
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -74,10 +74,10 @@ class VerifyAPIView(APIView):
     def post(self, request):
 
         phone = request.data.get('phone')
-        if phone:
-            phone = phone.replace(' ', '').replace('+', '')
-            
         password = request.data.get('password')
+        
+        if phone:
+            phone = phone.replace(' ', '').replace('+', '')    
 
         if not phone or not password:
             message = 'Укажите: "phone" и "password"'
@@ -90,12 +90,11 @@ class VerifyAPIView(APIView):
             return error_message_response_404(message)
 
         if user.check_password(password):
-            refresh = RefreshToken.for_user(user)
             # Обновить пароль пользователя, 
             # что бы ограничить аутентификацию только через полученный токен.
+            refresh = RefreshToken.for_user(user)
             user.set_password(generate_otp())
             user.save()
-
             return success_response_with_token(refresh)
         
         message = 'Неверный пароль'
@@ -114,8 +113,7 @@ class RefreshTokenAPIView(APIView):
             return error_message_response_400(message)
 
         try:
-            refresh = RefreshToken(refresh_token)
-            
+            refresh = RefreshToken(refresh_token) 
         except TokenError:
             message = 'Неверный токен'
             return error_message_response_422(message)
