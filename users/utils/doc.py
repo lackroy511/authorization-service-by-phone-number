@@ -159,7 +159,7 @@ def refresh_api_doc():
                 ),
             ),
             422: openapi.Response(
-                description='Токен доступа',
+                description='Неверный токен',
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={

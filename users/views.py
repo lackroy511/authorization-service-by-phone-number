@@ -25,9 +25,8 @@ from users.utils.utils import (error_message_response_400,
 
 class LoginAPIView(APIView):
     """
-     Эндпоинт принимает пост запрос с номером телефона и создает пользователя 
-    или генерирует новый пароль для входа, если пользователь уже существует.
-     Затем отправляет на почту код для аутентификации.
+    Принимает телефон пользователя и отправляет 
+    пароль для входа на почту(телефон).
     """
 
     @login_api_doc()
@@ -56,16 +55,13 @@ class LoginAPIView(APIView):
         send_otp_to_email.delay(user.email, otp, user.personal_invitation_code)
 
         # Для тестового вывода пароля
-        message = f'Код отправлен на телефон(почту) ${otp}'
-        
+        message = f'Код отправлен на телефон(почту) код:${otp}'
         return success_response(message)
 
 
 class VerifyAPIView(APIView):
     """
-     Эндпоинт принимает код отправленный на почту и обновляет пароль 
-    пользователя на неизвестный для него.
-     Если пароль верный выдает токен обновления и токен доступа.
+    Принимает телефон пользователя и код для входа
     """
     
     @verify_api_doc()
@@ -101,7 +97,7 @@ class VerifyAPIView(APIView):
 
 
 class RefreshTokenAPIView(APIView):
-    
+    """Принимает токен для обновления и возвращает токен для доступа."""
     @refresh_api_doc()
     def post(self, request):
 
@@ -122,6 +118,10 @@ class RefreshTokenAPIView(APIView):
 
 
 class ProfileRetrieveAPIView(RetrieveAPIView):
+    """
+    Возвращает все данные о пользователе.
+    """
+    
     permission_classes = [IsAuthenticated, IsCurrentUser]
 
     serializer_class = UserSerializer
@@ -130,6 +130,9 @@ class ProfileRetrieveAPIView(RetrieveAPIView):
 
 
 class ProfileUpdateAPIView(UpdateAPIView):
+    """
+    Обновление основной информации о профиле пользователя.
+    """
     permission_classes = [IsAuthenticated, IsCurrentUser]
 
     serializer_class = UpdateUserSerializer
