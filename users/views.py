@@ -67,7 +67,7 @@ class LoginAPIView(APIView):
 
 class VerifyAPIView(APIView):
     """
-    Принимает телефон пользователя и код для входа
+    Верификация пользователя по телефону и паролю.
     """
     
     @verify_api_doc()
@@ -103,7 +103,7 @@ class VerifyAPIView(APIView):
 
 
 class RefreshTokenAPIView(APIView):
-    """Принимает токен для обновления и возвращает токен для доступа."""
+    """Обновить токен доступа через токен обновления"""
     @refresh_api_doc()
     def post(self, request):
 
@@ -125,7 +125,7 @@ class RefreshTokenAPIView(APIView):
 
 class ProfileRetrieveAPIView(RetrieveAPIView):
     """
-    Возвращает все данные о пользователе.
+    Получить все данные о пользователе.
     """
     
     permission_classes = [IsAuthenticated, IsCurrentUser]
