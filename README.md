@@ -41,6 +41,11 @@ def send_otp_to_phone_number(phone: str, otp: str) -> None:
     """
     pass
 ```
+- в `.env` файле есть два параметра, которые позволяют управлять отправкой кода.
+```
+SEND_OTP_TO_EMAIL=True 
+SEND_OTP_TO_PHONE=False
+``` 
 
 ### Эндпоинты:
 ---
