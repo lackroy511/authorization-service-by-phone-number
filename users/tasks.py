@@ -18,5 +18,11 @@ def send_otp_to_email(email: str, otp: str, invitation_code: str) -> None:
 
 
 @shared_task()
-def send_otp_to_phone_number():
+def send_otp_to_phone_number(phone: str, otp: str) -> None:
+    """Отправить смс с кодом на телефон пользователя.
+
+    Args:
+        phone (str): Номер телефона.
+        otp (str): Одноразовый код.
+    """
     pass

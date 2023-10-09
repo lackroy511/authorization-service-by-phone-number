@@ -1,3 +1,4 @@
+import os
 from rest_framework import status
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -9,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from users.models import User
 from users.permissions import IsCurrentUser
 from users.serializers import UpdateUserSerializer, UserSerializer
-from users.tasks import send_otp_to_email
+from users.tasks import send_otp_to_email, send_otp_to_phone_number
 from users.utils.doc import (login_api_doc, profile_update_api_doc,
                              refresh_api_doc, verify_api_doc)
 from users.utils.login_api_view import user_get_or_create
@@ -52,8 +53,13 @@ class LoginAPIView(APIView):
 
         # Тут должна быть отправка смс с кодом на телефон пользователя
         # вместо отправки кода на почту.
-        send_otp_to_email.delay(user.email, otp, user.personal_invitation_code)
+        if os.getenv('SEND_OTP_TO_EMAIL') == 'True':
+            send_otp_to_email.delay(
+                user.email, otp, user.personal_invitation_code)
 
+        if os.getenv('SEND_OTP_TO_PHONE') == 'True':
+            send_otp_to_phone_number.delay(phone, otp)
+        
         # Для тестового вывода пароля
         message = f'Код отправлен на телефон(почту) код:${otp}'
         return success_response(message)
