@@ -51,8 +51,6 @@ class LoginAPIView(APIView):
         user.set_password(otp)
         user.save()
 
-        # Тут должна быть отправка смс с кодом на телефон пользователя
-        # вместо отправки кода на почту.
         if os.getenv('SEND_OTP_TO_EMAIL') == 'True':
             send_otp_to_email.delay(
                 user.email, otp, user.personal_invitation_code)
@@ -60,7 +58,6 @@ class LoginAPIView(APIView):
         if os.getenv('SEND_OTP_TO_PHONE') == 'True':
             send_otp_to_phone_number.delay(phone, otp)
         
-        # Для тестового вывода пароля
         message = f'Код отправлен на телефон(почту) код:${otp}'
         return success_response(message)
 
@@ -76,12 +73,11 @@ class VerifyAPIView(APIView):
         phone = request.data.get('phone')
         password = request.data.get('password')
         
-        if phone:
-            phone = phone.replace(' ', '').replace('+', '')    
-
         if not phone or not password:
             message = 'Укажите: "phone" и "password"'
             return error_message_response_400(message)
+        
+        phone = phone.replace(' ', '').replace('+', '')    
 
         try:
             user = User.objects.get(phone=phone)
@@ -90,8 +86,6 @@ class VerifyAPIView(APIView):
             return error_message_response_404(message)
 
         if user.check_password(password):
-            # Обновить пароль пользователя, 
-            # что бы ограничить аутентификацию только через полученный токен.
             refresh = RefreshToken.for_user(user)
             user.set_password(generate_otp())
             user.save()
