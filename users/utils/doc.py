@@ -213,6 +213,17 @@ def profile_update_api_doc():
                     },
                 ),
             ),
+            406: openapi.Response(
+                'Not Acceptable', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
+                    properties={
+                        'message': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
+                            example='Код приглашения не существует',
+                        ),
+                    },
+                ),
+            ),
             404: openapi.Response(
                 'Not found', openapi.Schema(
                     type=openapi.TYPE_OBJECT, 
