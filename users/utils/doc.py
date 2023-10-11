@@ -29,7 +29,7 @@ def login_api_doc():
                 ),
             ),
             400: openapi.Response(
-                'Success', openapi.Schema(
+                'Bad request', openapi.Schema(
                     type=openapi.TYPE_OBJECT, 
                     properties={
                         'message': openapi.Schema(
@@ -65,7 +65,7 @@ def verify_api_doc():
         ),
         responses={
             200: openapi.Response(
-                description='Токен доступа',
+                description='Success',
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
@@ -83,7 +83,7 @@ def verify_api_doc():
                 ),
             ),
             400: openapi.Response(
-                'Success', openapi.Schema(
+                'Bad request', openapi.Schema(
                     type=openapi.TYPE_OBJECT, 
                     properties={
                         'message': openapi.Schema(
@@ -94,7 +94,7 @@ def verify_api_doc():
                 ),
             ),
             401: openapi.Response(
-                'Success', openapi.Schema(
+                'Unauthorized', openapi.Schema(
                     type=openapi.TYPE_OBJECT, 
                     properties={
                         'message': openapi.Schema(
@@ -105,7 +105,7 @@ def verify_api_doc():
                 ),
             ),
             404: openapi.Response(
-                'Success', openapi.Schema(
+                'Not found', openapi.Schema(
                     type=openapi.TYPE_OBJECT, 
                     properties={
                         'message': openapi.Schema(
@@ -159,13 +159,11 @@ def refresh_api_doc():
                 ),
             ),
             422: openapi.Response(
-                description='Неверный токен',
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
+                'Invalid token', openapi.Schema(
+                    type=openapi.TYPE_OBJECT, 
                     properties={
-                        'message': openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description='Ответ сервера',
+                        'detail': openapi.Schema(
+                            type=openapi.TYPE_STRING, 
                             example='Неверный токен',
                         ),
                     },
@@ -204,7 +202,7 @@ def profile_update_api_doc():
         ),
         responses={
             400: openapi.Response(
-                'Bas request', openapi.Schema(
+                'Bad request', openapi.Schema(
                     type=openapi.TYPE_OBJECT, 
                     properties={
                         'message': openapi.Schema(
