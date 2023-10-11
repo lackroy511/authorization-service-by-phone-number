@@ -146,7 +146,7 @@ def refresh_api_doc():
         ),
         responses={
             200: openapi.Response(
-                description='Токен доступа',
+                description='Success',
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
